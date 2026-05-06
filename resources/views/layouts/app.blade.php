@@ -143,8 +143,8 @@
             width: 0; height: 2px; background: #FF0000;
             transition: width 0.3s ease;
         }
-        .nav-link:hover { color: #FF0000; }
-        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover, .nav-link.active { color: #FF0000; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
         .nav-actions {
             display: flex; align-items: center; gap: 0.75rem;
         }
@@ -177,11 +177,13 @@
         }
         .mobile-menu.active { display: block; }
         .mobile-menu a, .mobile-menu button {
-            display: block; width: 100%; text-align: left; padding: 0.5rem 0;
+            display: block; width: 100%; text-align: left; padding: 0.75rem 0;
             font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;
             font-weight: 500; background: none; border: none; color: var(--fg);
             cursor: pointer; font-family: 'Inter'; transition: color 0.2s;
+            text-decoration: none;
         }
+        .mobile-menu a::after { display: none; }
         .mobile-menu a:hover, .mobile-menu button:hover { color: #FF0000; }
         @media(min-width: 768px) { .mobile-menu { display: none !important; } }
 
@@ -416,10 +418,10 @@
                         <span class="nav-brand-text">NODE<span>SHOP</span></span>
                     </a>
                     <nav class="nav-links">
-                        <a href="{{ url('/') }}" class="nav-link">Home</a>
-                        <a href="{{ route('products.index') }}" class="nav-link">Shop</a>
-                        <a href="{{ auth()->check() ? route('orders.index') : route('login') }}" class="nav-link">Orders</a>
-                        <a href="{{ auth()->check() && auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->check() ? url('/') : route('login')) }}" class="nav-link">Admin</a>
+                        <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a>
+                        <a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}">Shop</a>
+                        <a href="{{ auth()->check() ? route('orders.index') : route('login') }}" class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">Orders</a>
+                        <a href="{{ auth()->check() && auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->check() ? url('/') : route('login')) }}" class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">Admin</a>
                     </nav>
                 </div>
 
@@ -460,18 +462,19 @@
 
             <!-- Mobile Menu -->
             <div class="mobile-menu" id="mobile-menu">
-                <a href="{{ url('/') }}">Home</a>
-                <a href="{{ route('products.index') }}">Shop</a>
-                <a href="{{ auth()->check() ? route('orders.index') : route('login') }}">Orders</a>
-                <a href="{{ auth()->check() && auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->check() ? url('/') : route('login')) }}">Admin</a>
+                <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a>
+                <a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}">Shop</a>
+                <a href="{{ auth()->check() ? route('orders.index') : route('login') }}" class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">Orders</a>
+                <a href="{{ auth()->check() && auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->check() ? url('/') : route('login')) }}" class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">Admin</a>
                 @auth
-                    <a href="{{ route('cart.index') }}">Cart</a>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <a href="{{ route('cart.index') }}" class="nav-link {{ request()->routeIs('cart.index') ? 'active' : '' }}">Cart</a>
+                    <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">Profile</a>
+                    <form method="POST" action="{{ route('logout') }}" style="margin-top:0.5rem;">
                         @csrf
-                        <button type="submit">Logout</button>
+                        <button type="submit" class="btn btn-primary btn-sm btn-block">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}">Login</a>
+                    <a href="{{ route('login') }}" class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}">Login</a>
                 @endauth
             </div>
         </div>
@@ -548,19 +551,23 @@
         const loaderBar = document.getElementById('loader-bar');
         const preloader = document.getElementById('preloader');
 
-        if (sessionStorage.getItem('node-shop-loaded')) {
-            // Already shown preloader this session — skip immediately
+        // Check if we are on a product detail page (e.g., /products/arduino-uno)
+        // The list is /products, so detail is /products/something
+        const isProductDetail = window.location.pathname.match(/\/products\/.+/) && 
+                               !window.location.pathname.endsWith('/products');
+
+        if (isProductDetail) {
+            // Skip preloader for product detail pages
             preloader.style.display = 'none';
             document.addEventListener('DOMContentLoaded', () => { initAnimations(); });
         } else {
-            // First visit — show preloader with percentage
+            // Show preloader for Home, Shop, Orders, Admin, Profile, Cart
             let progress = 0;
             const updateLoader = setInterval(() => {
                 progress += Math.floor(Math.random() * 10) + 5;
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(updateLoader);
-                    sessionStorage.setItem('node-shop-loaded', 'true');
                     setTimeout(() => {
                         gsap.to(preloader, {
                             yPercent: -100, duration: 0.8,
