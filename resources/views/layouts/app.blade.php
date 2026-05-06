@@ -339,6 +339,57 @@
         .alert-success { background: rgba(22,163,74,0.1); border-left-color: var(--success); color: var(--success); }
         .alert-danger { background: rgba(255,0,0,0.1); border-left-color: #FF0000; color: #FF0000; }
 
+        /* ── Pagination ── */
+        nav[role="navigation"] { display:flex; flex-direction:column; align-items:center; gap:1rem; }
+        nav[role="navigation"] .hidden { display:none; }
+        nav[role="navigation"] > div:first-child { display:none; }
+        nav[role="navigation"] > div:last-child { width:100%; }
+        nav[role="navigation"] > div:last-child > div:first-child { display:none; }
+        nav[role="navigation"] span[aria-current="page"] span,
+        nav[role="navigation"] a {
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:2.5rem; height:2.5rem; padding:0 0.75rem;
+            font-family:'JetBrains Mono'; font-size:0.85rem; font-weight:600;
+            border:2px solid var(--border); border-radius:var(--radius);
+            transition:all 0.2s; text-decoration:none; color:var(--fg);
+        }
+        nav[role="navigation"] span[aria-current="page"] span {
+            background:#FF0000; color:#fff; border-color:#FF0000;
+        }
+        nav[role="navigation"] a:hover {
+            border-color:#FF0000; color:#FF0000;
+        }
+        nav[role="navigation"] span[aria-disabled="true"] span {
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:2.5rem; height:2.5rem; padding:0 0.75rem;
+            font-family:'JetBrains Mono'; font-size:0.85rem;
+            border:2px solid var(--border); border-radius:var(--radius);
+            color:var(--muted-fg); opacity:0.5; cursor:not-allowed;
+        }
+        nav[role="navigation"] > div:last-child > div:last-child {
+            display:flex; align-items:center; justify-content:center; gap:0.25rem; flex-wrap:wrap;
+        }
+        /* Hide the "Showing X to Y of Z" text */
+        nav[role="navigation"] p { font-family:'JetBrains Mono'; font-size:0.8rem; color:var(--muted-fg); }
+
+        /* Also handle simple pagination */
+        .pagination { display:flex; align-items:center; justify-content:center; gap:0.25rem; list-style:none; }
+        .pagination li a, .pagination li span {
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:2.5rem; height:2.5rem; padding:0 0.75rem;
+            font-family:'JetBrains Mono'; font-size:0.85rem; font-weight:600;
+            border:2px solid var(--border); border-radius:var(--radius);
+            transition:all 0.2s; text-decoration:none; color:var(--fg);
+        }
+        .pagination li.active span { background:#FF0000; color:#fff; border-color:#FF0000; }
+        .pagination li a:hover { border-color:#FF0000; color:#FF0000; }
+        .pagination li.disabled span { opacity:0.5; cursor:not-allowed; }
+
+        /* Override SVG icons in pagination to be smaller */
+        nav[role="navigation"] svg {
+            width:1rem; height:1rem;
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg); }

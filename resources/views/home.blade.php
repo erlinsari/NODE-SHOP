@@ -115,7 +115,7 @@
 @php $featured = $featuredProducts->first(); @endphp
 <section style="padding:6rem 0; border-top:1px solid var(--border);">
     <div class="container">
-        <div class="card reveal" style="overflow:hidden;">
+        <div class="card card-2x reveal" style="overflow:hidden;">
             <div class="featured-grid">
                 <div style="padding:3rem; display:flex; flex-direction:column; justify-content:center;">
                     <span class="badge badge-primary" style="width:fit-content; margin-bottom:1.5rem;">FEATURED</span>
@@ -129,7 +129,7 @@
                     <div style="margin-bottom:2rem; display:flex; flex-direction:column; gap:0.75rem;">
                         @foreach(array_slice(explode('|', $featured->specifications), 0, 3) as $spec)
                         <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <div style="width:6px; height:6px; background:#FF0000; border-radius:50%; flex-shrink:0;"></div>
+                            <i class="fas fa-check" style="font-size:0.6rem; color:#FF0000; flex-shrink:0;"></i>
                             <span class="font-mono" style="font-size:0.85rem;">{{ trim($spec) }}</span>
                         </div>
                         @endforeach
@@ -139,11 +139,16 @@
                         View Details <i class="fas fa-chevron-right" style="font-size:0.75rem; margin-left:0.5rem;"></i>
                     </a>
                 </div>
-                <div style="min-height:24rem; background:linear-gradient(135deg, var(--muted), color-mix(in srgb, var(--muted) 50%, transparent)); display:flex; align-items:center; justify-content:center;">
+                <div style="min-height:24rem; background:linear-gradient(135deg, var(--muted), color-mix(in srgb, var(--muted) 50%, transparent)); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
                     @if($featured->image)
                         <img src="{{ asset('storage/' . $featured->image) }}" alt="{{ $featured->name }}" style="width:100%; height:100%; object-fit:cover;">
                     @else
-                        <div style="font-size:8rem;">{{ $featured->category->icon ?? '📦' }}</div>
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
+                            <div style="padding:2rem; border:2px solid var(--border); border-radius:var(--radius);">
+                                <i class="fas fa-microchip" style="font-size:4rem; color:var(--muted-fg);"></i>
+                            </div>
+                            <span class="font-mono text-muted uppercase" style="font-size:0.8rem; letter-spacing:0.1em;">{{ $featured->category->name ?? 'Hardware' }}</span>
+                        </div>
                     @endif
                 </div>
             </div>
