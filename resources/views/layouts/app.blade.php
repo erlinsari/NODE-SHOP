@@ -551,17 +551,20 @@
         const loaderBar = document.getElementById('loader-bar');
         const preloader = document.getElementById('preloader');
 
-        // Check if we are on a product detail page (e.g., /products/arduino-uno)
-        // The list is /products, so detail is /products/something
-        const isProductDetail = window.location.pathname.match(/\/products\/.+/) && 
-                               !window.location.pathname.endsWith('/products');
+        // Whitelist paths that SHOULD show the preloader
+        const path = window.location.pathname;
+        const showPreloader = path === '/' || 
+                             path === '/products' || 
+                             path === '/profile' || 
+                             path.startsWith('/orders') || 
+                             path.startsWith('/admin');
 
-        if (isProductDetail) {
-            // Skip preloader for product detail pages
+        if (!showPreloader) {
+            // Skip preloader for everything else (Product Detail, Checkout, etc.)
             preloader.style.display = 'none';
             document.addEventListener('DOMContentLoaded', () => { initAnimations(); });
         } else {
-            // Show preloader for Home, Shop, Orders, Admin, Profile, Cart
+            // Show preloader for main pages
             let progress = 0;
             const updateLoader = setInterval(() => {
                 progress += Math.floor(Math.random() * 10) + 5;
