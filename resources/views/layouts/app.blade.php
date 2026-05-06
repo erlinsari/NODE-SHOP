@@ -430,12 +430,15 @@
                     </button>
 
                     @auth
-                        <a href="{{ route('cart.index') }}" class="nav-icon-btn">
+                        <a href="{{ route('cart.index') }}" class="nav-icon-btn" title="Cart">
                             <i class="fas fa-shopping-cart" style="font-size:0.9rem;"></i>
                             @php $cartCount = auth()->user()->carts()->count(); @endphp
                             @if($cartCount > 0)
                                 <span class="cart-badge">{{ $cartCount }}</span>
                             @endif
+                        </a>
+                        <a href="{{ route('profile.edit') }}" class="nav-icon-btn" title="Profile">
+                            <i class="fas fa-user" style="font-size:0.9rem;"></i>
                         </a>
                         <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                             @csrf
@@ -444,7 +447,7 @@
                             </button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="nav-icon-btn">
+                        <a href="{{ route('login') }}" class="nav-icon-btn" title="Login">
                             <i class="fas fa-user" style="font-size:0.9rem;"></i>
                         </a>
                     @endauth
@@ -541,27 +544,35 @@
         gsap.registerPlugin(ScrollTrigger);
 
         // ── Preloader ──
-        let progress = 0;
         const loaderPercent = document.getElementById('loader-percent');
         const loaderBar = document.getElementById('loader-bar');
         const preloader = document.getElementById('preloader');
 
-        const updateLoader = setInterval(() => {
-            progress += Math.floor(Math.random() * 10) + 5;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(updateLoader);
-                setTimeout(() => {
-                    gsap.to(preloader, {
-                        yPercent: -100, duration: 0.8,
-                        ease: "power4.inOut",
-                        onComplete: () => { preloader.style.display = 'none'; initAnimations(); }
-                    });
-                }, 200);
-            }
-            loaderPercent.innerText = progress + '%';
-            loaderBar.style.width = progress + '%';
-        }, 50);
+        if (sessionStorage.getItem('node-shop-loaded')) {
+            // Already shown preloader this session — skip immediately
+            preloader.style.display = 'none';
+            document.addEventListener('DOMContentLoaded', () => { initAnimations(); });
+        } else {
+            // First visit — show preloader with percentage
+            let progress = 0;
+            const updateLoader = setInterval(() => {
+                progress += Math.floor(Math.random() * 10) + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(updateLoader);
+                    sessionStorage.setItem('node-shop-loaded', 'true');
+                    setTimeout(() => {
+                        gsap.to(preloader, {
+                            yPercent: -100, duration: 0.8,
+                            ease: "power4.inOut",
+                            onComplete: () => { preloader.style.display = 'none'; initAnimations(); }
+                        });
+                    }, 200);
+                }
+                loaderPercent.innerText = progress + '%';
+                loaderBar.style.width = progress + '%';
+            }, 50);
+        }
 
         // ── Theme Toggle ──
         const html = document.documentElement;
