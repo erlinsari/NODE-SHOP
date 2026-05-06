@@ -1,45 +1,94 @@
-{{-- Product Card Component --}}
-<div style="background: #000; border: 1px solid #1a1a1a; margin-bottom: 20px; transition: all 0.3s;"
-     onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 15px rgba(229,9,20,0.1)';"
-     onmouseout="this.style.borderColor='#1a1a1a'; this.style.boxShadow='none';">
+{{-- Product Card Component — Matching Reference Exactly --}}
+<div class="product-card card card-hover" style="overflow:hidden; display:flex; flex-direction:column; height:100%; perspective:1000px; cursor:pointer;"
+     onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
 
-    <a href="{{ route('products.show', $product->slug) }}" style="text-decoration: none; display: block; padding: 2rem 1rem; text-align: center; background: radial-gradient(circle at center, #111 0%, #000 100%); position: relative; min-height: 140px;">
-        <div style="font-size: 4rem; line-height: 1; color: #FFF;">{{ $product->category->icon ?? '📦' }}</div>
+    <div onclick="window.location='{{ route('products.show', $product->slug) }}'" style="position:relative; height:14rem; overflow:hidden; background:var(--muted);">
+        @if($product->image)
+            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                 style="width:100%; height:100%; object-fit:cover; transition: transform 0.6s ease;"
+                 class="card-img">
+        @else
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem;">
+                {{ $product->category->icon ?? '📦' }}
+            </div>
+        @endif
+
+        <div style="position:absolute; top:0.75rem; right:0.75rem;">
+            <span class="badge {{ $product->stock > 50 ? 'badge-success' : ($product->stock > 0 ? 'badge-warning' : 'badge-danger') }}">
+                {{ $product->stock > 0 ? 'Stock: ' . $product->stock : 'Out of Stock' }}
+            </span>
+        </div>
 
         @if($product->condition === 'preloved')
-            <span style="position: absolute; top: 10px; left: 10px; background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 2px 8px; font-size: 0.6rem; font-weight: 700; text-transform: uppercase;">PRELOVED</span>
+            <span class="badge badge-outline" style="position:absolute; top:0.75rem; left:0.75rem; background:var(--bg);">PRELOVED</span>
         @endif
         @if($product->discount_percent > 0)
-            <span style="position: absolute; top: 10px; right: 10px; background: var(--primary); color: #fff; padding: 2px 8px; font-size: 0.6rem; font-weight: 700;">-{{ $product->discount_percent }}%</span>
+            <span class="badge badge-primary" style="position:absolute; bottom:0.75rem; left:0.75rem;">-{{ $product->discount_percent }}%</span>
         @endif
-    </a>
+    </div>
 
-    <div style="padding: 1.2rem; border-top: 1px solid #1a1a1a;">
-        <a href="{{ route('products.show', $product->slug) }}" style="text-decoration: none;">
-            <div style="font-size: 0.65rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">{{ $product->category->name ?? 'Hardware' }}</div>
-            <h3 style="font-size: 0.9rem; font-weight: 700; color: #FFF; margin-bottom: 1rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 35px;">{{ $product->name }}</h3>
-        </a>
+    <div class="card-body" style="flex:1; display:flex; flex-direction:column; padding:1.5rem;">
+        <span class="badge badge-outline" style="width:fit-content; margin-bottom:0.75rem;">
+            {{ $product->category->name ?? 'HARDWARE' }}
+        </span>
 
-        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <h3 class="card-title font-black" style="font-size:1.1rem; margin-bottom:0.5rem; transition:color 0.2s; cursor:pointer;"
+            onclick="window.location='{{ route('products.show', $product->slug) }}'">
+            {{ $product->name }}
+        </h3>
+
+        <p class="font-mono text-muted line-clamp-2" style="font-size:0.85rem; margin-bottom:1rem; flex:1;">
+            {{ Str::limit($product->description, 80) }}
+        </p>
+
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-top:auto;">
             <div>
+                <p class="font-mono text-muted" style="font-size:0.75rem; margin-bottom:0.25rem;">Price</p>
                 @if($product->original_price)
-                    <div style="font-size: 0.7rem; color: var(--text-secondary); text-decoration: line-through; margin-bottom: 2px;">Rp {{ number_format($product->original_price, 0, ',', '.') }}</div>
+                    <p class="font-mono text-muted line-through" style="font-size:0.7rem;">
+                        Rp {{ number_format($product->original_price, 0, ',', '.') }}
+                    </p>
                 @endif
-                <div style="font-size: 1.1rem; font-weight: 900; color: #FFF;">{{ $product->formatted_price }}</div>
+                <p class="font-black" style="font-size:1.5rem;">{{ $product->formatted_price }}</p>
             </div>
 
             @if($product->stock > 0)
-            <form method="POST" action="{{ route('cart.store') }}" style="display: inline;">
+            <form method="POST" action="{{ route('cart.store') }}" onclick="event.stopPropagation();">
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                <button type="submit" style="background: var(--primary); color: #fff; border: none; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.3s;"
-                        onmouseover="this.style.background='var(--primary-dark)'" onmouseout="this.style.background='var(--primary)'">
-                    <i class="fas fa-plus"></i>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Add to Cart
                 </button>
             </form>
             @else
-                <span style="font-size: 0.7rem; color: #555; font-weight: 700; text-transform: uppercase;">OUT OF STOCK</span>
+                <span class="btn btn-primary btn-sm" style="opacity:0.5; cursor:not-allowed;">
+                    Out of Stock
+                </span>
             @endif
         </div>
     </div>
 </div>
+
+@once
+@push('styles')
+<style>
+    .product-card:hover .card-img { transform: scale(1.1); }
+    .product-card:hover .card-title { color: #FF0000; }
+</style>
+@endpush
+@push('scripts')
+<script>
+function tiltCard(e, card) {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
+    const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
+    card.style.transform = `perspective(1000px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg)`;
+    card.style.transition = 'none';
+}
+function resetTilt(card) {
+    card.style.transition = 'transform 0.5s ease';
+    card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0)';
+}
+</script>
+@endpush
+@endonce

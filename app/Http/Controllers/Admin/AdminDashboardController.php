@@ -20,7 +20,7 @@ class AdminDashboardController extends Controller
         ];
 
         $recentOrders = Order::with('user')->latest()->take(5)->get();
-        $topProducts = Product::orderBy('views_count', 'desc')->take(5)->get();
+        $topProducts = Product::with('category')->orderBy('views_count', 'desc')->take(5)->get();
 
         return view('admin.dashboard', compact('stats', 'recentOrders', 'topProducts'));
     }

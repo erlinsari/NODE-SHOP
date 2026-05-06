@@ -21,7 +21,7 @@ class OrderController extends Controller
 
     public function create()
     {
-        $cartItems = Cart::where('user_id', auth()->id())->with('product')->get();
+        $cartItems = Cart::where('user_id', auth()->id())->with('product.category')->get();
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja kosong!');
         }
@@ -89,7 +89,7 @@ class OrderController extends Controller
     {
         if ($order->user_id !== auth()->id() && !auth()->user()->isAdmin()) abort(403);
 
-        $order->load('items.product');
+        $order->load('items.product.category');
         return view('orders.show', compact('order'));
     }
 }

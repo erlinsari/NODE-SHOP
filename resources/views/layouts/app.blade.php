@@ -1,238 +1,562 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Node Shop') — Premium IoT Gear</title>
+    <title>@yield('title', 'NODE SHOP — Premium IoT Hardware')</title>
+
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800,900&display=swap" rel="stylesheet" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
     <style>
+        /* ═══════════════════════════════════════
+           DESIGN SYSTEM — NODE SHOP
+           E-commerce Website Design Theme
+        ═══════════════════════════════════════ */
+
         :root {
-            /* Beats/Carren Style Red & Black Theme */
-            --primary: #E50914;      /* Strong Red */
-            --primary-dark: #B20710;
-            --primary-light: #FF333D;
-            --secondary: #FFFFFF;
-            --accent: #E50914;
-            --dark: #000000;         /* Pure Black */
-            --dark-card: #0A0A0A;    /* Very dark gray */
-            --dark-surface: #141414;
-            --text-primary: #FFFFFF;
-            --text-secondary: #AAAAAA;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #E50914;
+            --bg: #f5f5f5;
+            --fg: #0a0a0a;
+            --card: #ffffff;
+            --card-fg: #0a0a0a;
+            --primary: #FF0000;
+            --primary-hover: #cc0000;
+            --primary-active: #990000;
+            --primary-fg: #ffffff;
+            --secondary: #e0e0e0;
+            --secondary-fg: #0a0a0a;
+            --muted: #f0f0f0;
+            --muted-fg: #6b6b6b;
+            --accent: #e8e8e8;
+            --border: rgba(0, 0, 0, 0.12);
+            --input-bg: #fafafa;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #FF0000;
+            --radius: 2px;
+        }
+
+        html.dark {
+            --bg: #000000;
+            --fg: #f5f5f5;
+            --card: #0a0a0a;
+            --card-fg: #f5f5f5;
+            --secondary: #1a1a1a;
+            --secondary-fg: #f5f5f5;
+            --muted: #1a1a1a;
+            --muted-fg: #a0a0a0;
+            --accent: #1a1a1a;
+            --border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255,255,255,0.05);
+            --success: #22c55e;
+            --warning: #eab308;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
 
-        /* Navbar - Solid Black with Red Accents */
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; }
+        @media(min-width: 1024px) { .container { padding: 0 2rem; } }
+
+        /* ── Preloader ── */
+        .preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: #000; z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; gap: 1.5rem;
+        }
+        .preloader .loader-logo {
+            font-family: 'Inter'; font-weight: 900; font-size: 2rem;
+            text-transform: uppercase; color: #fff; letter-spacing: -1px;
+        }
+        .preloader .loader-logo span { color: #FF0000; }
+        .preloader .loader-bar-track {
+            width: 200px; height: 2px; background: #222; overflow: hidden;
+        }
+        .preloader .loader-bar {
+            width: 0%; height: 100%; background: #FF0000;
+            transition: width 0.1s linear;
+        }
+        .preloader .loader-percent {
+            font-family: 'JetBrains Mono'; font-size: 3rem; font-weight: 700;
+            color: #fff; letter-spacing: -2px;
+        }
+
+        /* ── Navbar ── */
         .navbar {
-            background: #000000;
-            border-bottom: 2px solid var(--dark-surface);
-            padding: 0 2rem;
-            height: 80px;
-            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 1000; width: 100%;
+            border-bottom: 1px solid var(--border);
+            background: color-mix(in srgb, var(--bg) 80%, transparent);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .navbar-inner {
+            display: flex; height: 64px; align-items: center; justify-content: space-between;
         }
         .nav-brand {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-decoration: none; color: var(--text-primary);
+            display: flex; align-items: center; gap: 0.5rem;
+            text-decoration: none;
+        }
+        .nav-brand-icon {
+            width: 32px; height: 32px; background: #FF0000;
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 900; font-size: 1.1rem;
+        }
+        .nav-brand-text {
+            font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+        .nav-brand-text span { color: #FF0000; }
+        .nav-links {
+            display: none; align-items: center; gap: 1.5rem;
+        }
+        @media(min-width: 768px) { .nav-links { display: flex; } }
+        .nav-link {
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;
+            font-weight: 500; position: relative; background: none; border: none;
+            color: var(--fg); cursor: pointer; padding: 0;
+            font-family: 'Inter'; transition: color 0.2s;
+        }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 0; height: 2px; background: #FF0000;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover { color: #FF0000; }
+        .nav-link:hover::after { width: 100%; }
+        .nav-actions {
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .nav-icon-btn {
+            position: relative; padding: 0.5rem;
+            border-radius: var(--radius); border: 1px solid var(--border);
+            background: transparent; color: var(--fg); cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center;
+            justify-content: center;
+        }
+        .nav-icon-btn:hover { border-color: #FF0000; }
+        .nav-icon-btn .cart-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: #FF0000; color: #fff; font-size: 0.65rem;
+            font-family: 'JetBrains Mono'; width: 18px; height: 18px;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-weight: 700;
+        }
+        /* Mobile menu button */
+        .nav-mobile-btn {
+            display: flex; padding: 0.5rem; border: 1px solid var(--border);
+            border-radius: var(--radius); background: transparent;
+            color: var(--fg); cursor: pointer;
+        }
+        @media(min-width: 768px) { .nav-mobile-btn { display: none; } }
+
+        /* Mobile menu */
+        .mobile-menu {
+            display: none; border-top: 1px solid var(--border); padding: 1rem 0;
+        }
+        .mobile-menu.active { display: block; }
+        .mobile-menu a, .mobile-menu button {
+            display: block; width: 100%; text-align: left; padding: 0.5rem 0;
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;
+            font-weight: 500; background: none; border: none; color: var(--fg);
+            cursor: pointer; font-family: 'Inter'; transition: color 0.2s;
+        }
+        .mobile-menu a:hover, .mobile-menu button:hover { color: #FF0000; }
+        @media(min-width: 768px) { .mobile-menu { display: none !important; } }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em;
+            font-weight: 600; font-family: 'Inter'; border: none; cursor: pointer;
+            border-radius: var(--radius); font-size: 0.85rem; gap: 0.5rem;
             line-height: 1;
         }
-        .nav-brand .brand-main { font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; }
-        .nav-brand .brand-sub { font-size: 0.7rem; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary {
+            background: #FF0000; color: #fff; padding: 0.75rem 1.5rem;
+        }
+        .btn-primary:hover:not(:disabled) { background: #cc0000; }
+        .btn-primary:active:not(:disabled) { background: #990000; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.75rem; }
+        .btn-lg { padding: 1rem 2rem; font-size: 0.95rem; }
+        .btn-outline {
+            background: transparent; color: var(--fg);
+            border: 2px solid var(--fg); padding: calc(0.75rem - 2px) calc(1.5rem - 2px);
+        }
+        .btn-outline:hover:not(:disabled) { background: var(--fg); color: var(--bg); }
+        .btn-ghost {
+            background: transparent; color: var(--fg); padding: 0.75rem 1.5rem;
+        }
+        .btn-ghost:hover { background: var(--accent); }
+        .btn-block { width: 100%; }
 
-        .nav-links {
-            display: flex; align-items: center; gap: 2.5rem; list-style: none; height: 100%;
+        /* ── Cards ── */
+        .card {
+            background: var(--card); color: var(--card-fg);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            transition: all 0.3s;
         }
-        .nav-links li { height: 100%; display: flex; align-items: center; }
-        .nav-links a {
-            color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 1px; transition: color 0.3s; position: relative; height: 100%; display: flex; align-items: center;
+        .card-hover:hover {
+            border-color: #FF0000;
+            box-shadow: 0 8px 24px rgba(255, 0, 0, 0.1);
         }
-        .nav-links a:hover { color: var(--text-primary); }
-        .nav-links a.active { color: var(--primary); }
-        .nav-links a.active::after {
-            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--primary);
+        .card-header {
+            padding: 1.5rem; border-bottom: 1px solid var(--border);
+        }
+        .card-body { padding: 1.5rem; }
+        .card-footer {
+            padding: 1.5rem; border-top: 1px solid var(--border);
+        }
+        .card-2x { border-width: 2px; }
+        .card-2x .card-header { border-bottom-width: 2px; }
+        .card-2x .card-footer { border-top-width: 2px; }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-flex; align-items: center; padding: 0.15rem 0.6rem;
+            border-radius: var(--radius); font-size: 0.7rem;
+            font-family: 'JetBrains Mono'; text-transform: uppercase;
+            letter-spacing: 0.05em; font-weight: 600; border: 1px solid transparent;
+        }
+        .badge-primary { background: #FF0000; color: #fff; border-color: #FF0000; }
+        .badge-secondary { background: var(--secondary); color: var(--secondary-fg); border-color: var(--secondary); }
+        .badge-success { background: var(--success); color: #fff; border-color: var(--success); }
+        .badge-warning { background: var(--warning); color: #fff; border-color: var(--warning); }
+        .badge-danger { background: #FF0000; color: #fff; border-color: #FF0000; }
+        .badge-outline { background: transparent; border-color: var(--border); color: var(--fg); }
+
+        /* ── Form Inputs ── */
+        .form-input {
+            width: 100%; padding: 0.75rem 1rem;
+            background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: var(--radius); color: var(--fg);
+            font-family: 'JetBrains Mono'; font-size: 0.9rem;
+            outline: none; transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: #FF0000; }
+        .form-input::placeholder { color: var(--muted-fg); }
+        .form-label {
+            display: block; font-family: 'JetBrains Mono'; font-size: 0.8rem;
+            margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+        .form-input-icon {
+            position: relative;
+        }
+        .form-input-icon .icon {
+            position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+            color: var(--muted-fg); font-size: 0.9rem;
+        }
+        .form-input-icon .form-input { padding-left: 2.5rem; }
+
+        /* ── Utilities ── */
+        .text-primary { color: #FF0000; }
+        .text-muted { color: var(--muted-fg); }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: #FF0000; }
+        .font-black { font-weight: 900; }
+        .font-bold { font-weight: 700; }
+        .uppercase { text-transform: uppercase; }
+        .line-through { text-decoration: line-through; }
+        .line-clamp-2 {
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        .nav-actions { display: flex; align-items: center; gap: 1.5rem; }
-        .nav-search { position: relative; }
-        .nav-search input {
-            background: #111; border: 1px solid #333; border-radius: 4px; padding: 8px 16px 8px 38px;
-            color: var(--text-primary); font-size: 0.85rem; width: 220px; outline: none; transition: all 0.3s;
+        /* ── Theme Toggle ── */
+        .theme-toggle {
+            padding: 0.5rem; border-radius: var(--radius);
+            border: 1px solid var(--border); background: transparent;
+            color: var(--fg); cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
         }
-        .nav-search input:focus { border-color: var(--primary); background: #1a1a1a; }
-        .nav-search i {
-            position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.85rem;
-        }
-        .nav-cart {
-            position: relative; color: var(--text-primary); text-decoration: none; font-size: 1.2rem; transition: color 0.3s;
-        }
-        .nav-cart:hover { color: var(--primary); }
-        .nav-cart .badge {
-            position: absolute; top: -8px; right: -10px; background: var(--primary); color: white; font-size: 0.65rem;
-            font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        }
+        .theme-toggle:hover { border-color: #FF0000; }
+        html.dark .theme-icon-sun { display: inline; }
+        html.dark .theme-icon-moon { display: none; }
+        html:not(.dark) .theme-icon-sun { display: none; }
+        html:not(.dark) .theme-icon-moon { display: inline; }
 
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 10px 24px; border-radius: 2px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
-            text-decoration: none; border: none; cursor: pointer; transition: all 0.3s ease; letter-spacing: 1px;
-        }
-        .btn-primary { background: var(--primary); color: #FFF; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
-        .btn-outline:hover { background: var(--primary); color: #FFF; }
-
-        .main-content { min-height: calc(100vh - 80px); }
-
-        /* Footer - Red Top Border */
-        .footer {
-            background: #050505; border-top: 4px solid var(--primary); padding: 4rem 2rem 2rem;
+        /* ── Footer ── */
+        .site-footer {
+            border-top: 1px solid var(--border); margin-top: 5rem;
         }
         .footer-grid {
-            max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem;
+            display: grid; grid-template-columns: 1fr; gap: 2rem;
+            padding: 3rem 0;
         }
-        .footer-brand p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7; margin-top: 1rem; }
-        .footer-col h4 { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1.5rem; color: #FFF; letter-spacing: 1px; }
-        .footer-col ul { list-style: none; }
-        .footer-col ul li { margin-bottom: 0.8rem; }
-        .footer-col ul a { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; transition: color 0.3s; }
-        .footer-col ul a:hover { color: var(--primary); }
+        @media(min-width: 768px) {
+            .footer-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .footer-title {
+            font-weight: 900; text-transform: uppercase; margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 0.5rem; }
+        .footer-links a {
+            font-family: 'JetBrains Mono'; font-size: 0.85rem;
+            color: var(--muted-fg); transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #FF0000; }
         .footer-bottom {
-            max-width: 1200px; margin: 3rem auto 0; padding-top: 1.5rem; border-top: 1px solid #222;
-            display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-secondary);
+            border-top: 1px solid var(--border); padding: 2rem 0;
+            text-align: center; font-family: 'JetBrains Mono';
+            font-size: 0.8rem; color: var(--muted-fg);
         }
-        .social-links { display: flex; gap: 1rem; }
-        .social-links a {
-            color: var(--text-secondary); font-size: 1.2rem; background: #111; width: 36px; height: 36px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s;
-        }
-        .social-links a:hover { color: #FFF; background: var(--primary); }
-        
-        .dropdown { position: relative; }
-        .dropdown-menu {
-            position: absolute; top: calc(100% + 5px); right: 0; background: #111; border: 1px solid #333;
-            min-width: 180px; display: none; z-index: 100;
-        }
-        .dropdown:hover .dropdown-menu { display: block; }
-        .dropdown-menu a {
-            display: block; padding: 10px 15px; color: var(--text-secondary); text-decoration: none;
-            font-size: 0.85rem; transition: all 0.2s; border-bottom: 1px solid #222;
-        }
-        .dropdown-menu a:hover { background: #222; color: var(--text-primary); border-left: 3px solid var(--primary); }
 
+        /* ── Animations ── */
+        .reveal { opacity: 0; transform: translateY(40px); }
+        .reveal.active { opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+
+        /* Alert/Toast */
+        .alert {
+            padding: 1rem 1.5rem; border-radius: var(--radius);
+            margin-bottom: 1rem; font-size: 0.85rem; border-left: 3px solid;
+        }
+        .alert-success { background: rgba(22,163,74,0.1); border-left-color: var(--success); color: var(--success); }
+        .alert-danger { background: rgba(255,0,0,0.1); border-left-color: #FF0000; color: #FF0000; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
     @stack('styles')
 </head>
 <body>
-    <nav class="navbar">
-        <a href="{{ url('/') }}" class="nav-brand">
-            <span class="brand-main">NODE<span style="color:var(--primary)">SHOP</span></span>
-            <span class="brand-sub">PREMIUM IOT GEAR</span>
-        </a>
+    <!-- Preloader -->
+    <div class="preloader" id="preloader">
+        <div class="loader-logo">NODE<span>SHOP</span></div>
+        <div class="loader-bar-track"><div class="loader-bar" id="loader-bar"></div></div>
+        <div class="loader-percent" id="loader-percent">0%</div>
+    </div>
 
-        <ul class="nav-links">
-            <li><a href="{{ url('/') }}" class="{{ request()->is('/') ? 'active' : '' }}">Home</a></li>
-            <li><a href="{{ route('products.index') }}" class="{{ request()->routeIs('products.*') ? 'active' : '' }}">Store</a></li>
-            <li><a href="{{ route('products.index', ['condition' => 'preloved']) }}" class="{{ request()->is('products*') && request('condition') == 'preloved' ? 'active' : '' }}">Preloved</a></li>
-            <li><a href="#">Gallery</a></li>
-        </ul>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <div style="display:flex; align-items:center; gap:2rem;">
+                    <a href="{{ url('/') }}" class="nav-brand">
+                        <div class="nav-brand-icon">N</div>
+                        <span class="nav-brand-text">NODE<span>SHOP</span></span>
+                    </a>
+                    <nav class="nav-links">
+                        <a href="{{ url('/') }}" class="nav-link">Home</a>
+                        <a href="{{ route('products.index') }}" class="nav-link">Shop</a>
+                        <a href="{{ auth()->check() ? route('orders.index') : route('login') }}" class="nav-link">Orders</a>
+                        <a href="{{ auth()->check() && auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->check() ? url('/') : route('login')) }}" class="nav-link">Admin</a>
+                    </nav>
+                </div>
 
-        <div class="nav-actions">
-            <div class="nav-search">
-                <i class="fas fa-search"></i>
-                <form action="{{ route('products.index') }}" method="GET">
-                    <input type="text" name="search" placeholder="Search product..." value="{{ request('search') }}">
-                </form>
+                <div class="nav-actions">
+                    <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+                        <i class="fas fa-sun theme-icon-sun" style="font-size:0.9rem;"></i>
+                        <i class="fas fa-moon theme-icon-moon" style="font-size:0.9rem;"></i>
+                    </button>
+
+                    @auth
+                        <a href="{{ route('cart.index') }}" class="nav-icon-btn">
+                            <i class="fas fa-shopping-cart" style="font-size:0.9rem;"></i>
+                            @php $cartCount = auth()->user()->carts()->count(); @endphp
+                            @if($cartCount > 0)
+                                <span class="cart-badge">{{ $cartCount }}</span>
+                            @endif
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="nav-icon-btn" title="Logout">
+                                <i class="fas fa-sign-out-alt" style="font-size:0.9rem;"></i>
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="nav-icon-btn">
+                            <i class="fas fa-user" style="font-size:0.9rem;"></i>
+                        </a>
+                    @endauth
+
+                    <button class="nav-mobile-btn" id="mobile-menu-btn">
+                        <i class="fas fa-bars" style="font-size:0.9rem;"></i>
+                    </button>
+                </div>
             </div>
 
-            @auth
-                <a href="{{ route('cart.index') }}" class="nav-cart" title="Cart">
-                    <i class="fas fa-shopping-cart"></i>
-                    @php $cartCount = auth()->user()->carts()->count(); @endphp
-                    @if($cartCount > 0)
-                        <span class="badge">{{ $cartCount }}</span>
-                    @endif
-                </a>
-
-                <div class="dropdown">
-                    <a href="#" class="btn btn-outline" style="padding: 6px 12px;">
-                        <i class="fas fa-user"></i> {{ Str::limit(auth()->user()->name, 10) }}
-                    </a>
-                    <div class="dropdown-menu">
-                        @if(auth()->user()->isAdmin())
-                            <a href="{{ route('admin.dashboard') }}">Dashboard</a>
-                        @endif
-                        <a href="{{ route('orders.index') }}">My Orders</a>
-                        <a href="{{ route('profile.edit') }}">Settings</a>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Logout</a>
-                        </form>
-                    </div>
-                </div>
-            @else
-                <a href="{{ route('login') }}" class="btn btn-outline" style="padding: 8px 16px;">Log in</a>
-                <a href="{{ route('register') }}" class="btn btn-primary" style="padding: 8px 16px;">Sign Up</a>
-            @endauth
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobile-menu">
+                <a href="{{ url('/') }}">Home</a>
+                <a href="{{ route('products.index') }}">Shop</a>
+                <a href="{{ auth()->check() ? route('orders.index') : route('login') }}">Orders</a>
+                <a href="{{ auth()->check() && auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->check() ? url('/') : route('login')) }}">Admin</a>
+                @auth
+                    <a href="{{ route('cart.index') }}">Cart</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}">Login</a>
+                @endauth
+            </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="main-content">
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="container" style="padding-top:1rem;">
+            <div class="alert alert-success">{{ session('success') }}</div>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="container" style="padding-top:1rem;">
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        </div>
+    @endif
+
+    <main>
         @yield('content')
     </main>
 
-    <footer class="footer">
-        <div class="footer-grid">
-            <div class="footer-brand">
-                <a href="{{ url('/') }}" class="nav-brand" style="align-items: flex-start;">
-                    <span class="brand-main">NODE<span style="color:var(--primary)">SHOP</span></span>
-                    <span class="brand-sub">PREMIUM IOT GEAR</span>
-                </a>
-                <p>High performance IoT devices, microcontrollers, and precision sensors for professional makers and developers.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Hardware</h4>
-                <ul>
-                    <li><a href="#">Microcontrollers</a></li>
-                    <li><a href="#">Sensors</a></li>
-                    <li><a href="#">Wireless Modules</a></li>
-                    <li><a href="#">Accessories</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="#">Documentation</a></li>
-                    <li><a href="#">Order Tracking</a></li>
-                    <li><a href="#">Warranty</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Connect</h4>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a href="{{ url('/') }}" class="nav-brand" style="margin-bottom:1rem;">
+                        <div class="nav-brand-icon">N</div>
+                        <span class="nav-brand-text">NODE<span>SHOP</span></span>
+                    </a>
+                    <p class="font-mono" style="font-size:0.85rem; color:var(--muted-fg); margin-top:1rem; line-height:1.6;">
+                        Professional IoT hardware for developers and engineers.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="footer-title">Shop</h3>
+                    <ul class="footer-links">
+                        <li><a href="{{ route('products.index') }}">All Products</a></li>
+                        <li><a href="{{ route('products.index', ['category' => 'microcontroller']) }}">Microcontrollers</a></li>
+                        <li><a href="{{ route('products.index', ['category' => 'sensor']) }}">Sensors</a></li>
+                        <li><a href="{{ route('products.index', ['condition' => 'preloved']) }}">Preloved</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Warranty</a></li>
+                        <li><a href="#">Shipping</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="footer-title">Connect</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">LinkedIn</a></li>
+                        <li><a href="#">YouTube</a></li>
+                    </ul>
                 </div>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>Copyright &copy; {{ date('Y') }} Node Shop. All Rights Reserved.</p>
-            <div style="display:flex; gap: 15px;">
-                <a href="#" style="color:#aaa; text-decoration:none;">Privacy Policy</a>
-                <a href="#" style="color:#aaa; text-decoration:none;">Terms of Use</a>
+            <div class="footer-bottom">
+                &copy; {{ date('Y') }} NODE SHOP. All rights reserved. Built with precision.
             </div>
         </div>
     </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // ── Preloader ──
+        let progress = 0;
+        const loaderPercent = document.getElementById('loader-percent');
+        const loaderBar = document.getElementById('loader-bar');
+        const preloader = document.getElementById('preloader');
+
+        const updateLoader = setInterval(() => {
+            progress += Math.floor(Math.random() * 10) + 5;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(updateLoader);
+                setTimeout(() => {
+                    gsap.to(preloader, {
+                        yPercent: -100, duration: 0.8,
+                        ease: "power4.inOut",
+                        onComplete: () => { preloader.style.display = 'none'; initAnimations(); }
+                    });
+                }, 200);
+            }
+            loaderPercent.innerText = progress + '%';
+            loaderBar.style.width = progress + '%';
+        }, 50);
+
+        // ── Theme Toggle ──
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('node-shop-theme');
+        if (savedTheme === 'dark') {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('node-shop-theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // ── Mobile Menu ──
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('active');
+        });
+
+        // ── Scroll Animations ──
+        function initAnimations() {
+            gsap.utils.toArray('.reveal').forEach(el => {
+                gsap.fromTo(el,
+                    { opacity: 0, y: 40 },
+                    {
+                        opacity: 1, y: 0, duration: 0.8,
+                        ease: "power4.out",
+                        scrollTrigger: { trigger: el, start: "top 85%", once: true }
+                    }
+                );
+            });
+
+            gsap.utils.toArray('.stagger-reveal').forEach(container => {
+                const children = container.children;
+                gsap.fromTo(children,
+                    { opacity: 0, y: 40 },
+                    {
+                        opacity: 1, y: 0, duration: 0.6,
+                        stagger: 0.1, ease: "power4.out",
+                        scrollTrigger: { trigger: container, start: "top 85%", once: true }
+                    }
+                );
+            });
+        }
+    </script>
+    @stack('scripts')
 </body>
 </html>

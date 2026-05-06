@@ -1,101 +1,197 @@
 @extends('layouts.app')
-@section('title', $product->name)
+@section('title', $product->name . ' — NODE SHOP')
 
 @section('content')
-<section style="padding: 2rem;">
+<section style="min-height:100vh; padding:2rem 0;">
     <div class="container">
-        <!-- Breadcrumb -->
-        <div style="margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-secondary);">
-            <a href="{{ url('/') }}" style="color: var(--text-secondary); text-decoration: none;">Beranda</a> /
-            <a href="{{ route('products.index') }}" style="color: var(--text-secondary); text-decoration: none;">Produk</a> /
-            <a href="{{ route('products.index', ['category' => $product->category->slug]) }}" style="color: var(--text-secondary); text-decoration: none;">{{ $product->category->name }}</a> /
-            <span style="color: var(--primary-light);">{{ Str::limit($product->name, 30) }}</span>
-        </div>
+        {{-- Back Button --}}
+        <a href="{{ route('products.index') }}" class="reveal" style="display:inline-flex; align-items:center; gap:0.5rem; margin-bottom:2rem; font-family:'JetBrains Mono'; text-transform:uppercase; font-size:0.85rem; transition:color 0.2s;"
+           onmouseover="this.style.color='#FF0000'" onmouseout="this.style.color='var(--fg)'">
+            <i class="fas fa-chevron-left" style="font-size:0.7rem;"></i> Back to Shop
+        </a>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
-            <!-- Product Image -->
-            <div style="background: var(--dark-card); border: 1px solid rgba(108,92,231,0.1); border-radius: 24px; padding: 3rem; text-align: center; display: flex; align-items: center; justify-content: center; min-height: 400px; position: relative;">
-                <div style="font-size: 8rem;">{{ $product->category->icon ?? '📦' }}</div>
-                @if($product->condition === 'preloved')
-                    <span style="position: absolute; top: 16px; left: 16px; background: var(--accent); color: white; padding: 6px 16px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;">♻️ PRELOVED {{ $product->preloved_grade ? '— Grade ' . $product->preloved_grade : '' }}</span>
-                @endif
-                @if($product->discount_percent > 0)
-                    <span style="position: absolute; top: 16px; right: 16px; background: var(--danger); color: white; padding: 6px 16px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;">-{{ $product->discount_percent }}%</span>
-                @endif
+        {{-- 2-column grid — matches ProductDetailPage.tsx --}}
+        <div class="product-detail-grid">
+            {{-- Left: Sticky Image + Info Cards --}}
+            <div class="reveal" style="position:sticky; top:6rem; height:fit-content;">
+                <div class="card card-2x" style="overflow:hidden;">
+                    <div style="position:relative; aspect-ratio:1; background:var(--muted); cursor:zoom-in; overflow:hidden;">
+                        @if($product->image)
+                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" 
+                                 style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s;" 
+                                 onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
+                                 id="product-main-image">
+                        @else
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:8rem;">{{ $product->category->icon ?? '📦' }}</div>
+                        @endif
+                        
+                        {{-- Badges --}}
+                        @if($product->condition === 'preloved')
+                            <span class="badge badge-outline" style="position:absolute; top:1rem; left:1rem; background:var(--bg);">PRELOVED</span>
+                        @endif
+                        @if($product->discount_percent > 0)
+                            <span class="badge badge-primary" style="position:absolute; top:1rem; left:{{ $product->condition === 'preloved' ? '7rem' : '1rem' }};">-{{ $product->discount_percent }}%</span>
+                        @endif
+                        <div style="position:absolute; top:1rem; right:1rem;">
+                            <span class="badge {{ $product->stock > 50 ? 'badge-success' : ($product->stock > 0 ? 'badge-warning' : 'badge-danger') }}">
+                                {{ $product->stock > 0 ? 'IN STOCK: ' . $product->stock : 'OUT OF STOCK' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Info Cards 3-col --}}
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem; margin-top:0.75rem;">
+                    <div class="card" style="padding:1rem; display:flex; align-items:center; gap:0.75rem;">
+                        <i class="fas fa-shipping-fast text-primary" style="font-size:1.1rem;"></i>
+                        <div>
+                            <p class="font-mono text-muted" style="font-size:0.65rem;">Free Shipping</p>
+                            <p class="font-black" style="font-size:0.7rem;">Orders > 500K</p>
+                        </div>
+                    </div>
+                    <div class="card" style="padding:1rem; display:flex; align-items:center; gap:0.75rem;">
+                        <i class="fas fa-shield-alt text-primary" style="font-size:1.1rem;"></i>
+                        <div>
+                            <p class="font-mono text-muted" style="font-size:0.65rem;">Warranty</p>
+                            <p class="font-black" style="font-size:0.7rem;">12 Months</p>
+                        </div>
+                    </div>
+                    <div class="card" style="padding:1rem; display:flex; align-items:center; gap:0.75rem;">
+                        <i class="fas fa-bolt text-primary" style="font-size:1.1rem;"></i>
+                        <div>
+                            <p class="font-mono text-muted" style="font-size:0.65rem;">Delivery</p>
+                            <p class="font-black" style="font-size:0.7rem;">1-3 Days</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Product Info -->
-            <div>
-                <div style="font-size: 0.75rem; color: var(--primary-light); font-weight: 600; margin-bottom: 0.5rem;">{{ $product->category->name }}</div>
-                <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.8rem; line-height: 1.3;">{{ $product->name }}</h1>
+            {{-- Right: Product Info --}}
+            <div class="reveal">
+                {{-- Category Badge --}}
+                <span class="badge badge-outline" style="margin-bottom:1rem;">{{ $product->category->name ?? 'HARDWARE' }}</span>
 
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="display: flex; gap: 3px; color: #FDCB6E;">
+                {{-- Title --}}
+                <h1 class="font-black uppercase" style="font-size:clamp(2rem, 5vw, 3.75rem); margin-bottom:1rem; line-height:1;">
+                    {{ $product->name }}
+                </h1>
+
+                {{-- Rating --}}
+                @if($product->reviews->count() > 0)
+                <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+                    <div style="display:flex; gap:2px;">
                         @for($i = 1; $i <= 5; $i++)
-                            <i class="fas fa-star" style="font-size: 0.85rem; opacity: {{ $i <= round($product->average_rating) ? '1' : '0.3' }};"></i>
+                            <i class="fas fa-star" style="font-size:0.85rem; color:{{ $i <= round($product->average_rating) ? '#FF0000' : 'var(--border)' }};"></i>
                         @endfor
                     </div>
-                    <span style="font-size: 0.8rem; color: var(--text-secondary);">({{ $product->reviews->count() }} ulasan)</span>
-                    <span style="font-size: 0.8rem; color: var(--text-secondary);"><i class="fas fa-eye"></i> {{ $product->views_count }}x dilihat</span>
+                    <span class="font-mono text-muted" style="font-size:0.8rem;">{{ number_format($product->average_rating, 1) }} ({{ $product->reviews->count() }} reviews)</span>
                 </div>
-
-                <div style="background: var(--dark-card); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid rgba(108,92,231,0.1);">
-                    <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 0.5rem;">
-                        <span style="font-size: 2rem; font-weight: 900; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ $product->formatted_price }}</span>
-                        @if($product->original_price)
-                            <span style="font-size: 1rem; color: var(--text-secondary); text-decoration: line-through;">Rp {{ number_format($product->original_price, 0, ',', '.') }}</span>
-                            <span style="background: rgba(255,107,107,0.15); color: var(--danger); padding: 3px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">Hemat {{ $product->discount_percent }}%</span>
-                        @endif
-                    </div>
-                    <div style="font-size: 0.8rem; color: {{ $product->stock > 0 ? 'var(--success)' : 'var(--danger)' }};">
-                        <i class="fas fa-{{ $product->stock > 0 ? 'check-circle' : 'times-circle' }}"></i>
-                        {{ $product->stock > 0 ? 'Stok tersedia: ' . $product->stock . ' unit' : 'Stok habis' }}
-                    </div>
-                </div>
-
-                @if($product->stock > 0)
-                <form method="POST" action="{{ route('cart.store') }}" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <div style="display: flex; align-items: center; background: var(--dark-surface); border-radius: 12px; border: 1px solid rgba(108,92,231,0.2);">
-                        <button type="button" onclick="let q=this.parentNode.querySelector('input');q.value=Math.max(1,q.value-1)" style="background: none; border: none; color: var(--text-secondary); padding: 10px 14px; cursor: pointer; font-size: 1rem;">−</button>
-                        <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}" style="width: 50px; text-align: center; background: transparent; border: none; color: var(--text-primary); font-size: 0.9rem; font-weight: 600; outline: none;">
-                        <button type="button" onclick="let q=this.parentNode.querySelector('input');q.value=Math.min({{ $product->stock }},parseInt(q.value)+1)" style="background: none; border: none; color: var(--text-secondary); padding: 10px 14px; cursor: pointer; font-size: 1rem;">+</button>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center; padding: 14px;">
-                        <i class="fas fa-cart-plus"></i> Tambah ke Keranjang
-                    </button>
-                </form>
                 @endif
 
-                <!-- Description -->
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem;">📋 Deskripsi</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.8;">{{ $product->description }}</p>
+                {{-- Price --}}
+                <div style="display:flex; align-items:baseline; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+                    <span class="font-black" style="font-size:3rem; line-height:1;">{{ $product->formatted_price }}</span>
+                    @if($product->original_price && $product->original_price > $product->price)
+                        <span class="font-mono text-muted line-through" style="font-size:1.1rem;">
+                            Rp {{ number_format($product->original_price, 0, ',', '.') }}
+                        </span>
+                        <span class="badge badge-primary">SAVE {{ $product->discount_percent }}%</span>
+                    @endif
                 </div>
 
+                {{-- Description --}}
+                <p class="font-mono text-muted" style="font-size:1rem; margin-bottom:2rem; line-height:1.8;">
+                    {{ $product->description }}
+                </p>
+
+                {{-- Technical Specifications --}}
                 @if($product->specifications)
-                <div style="background: var(--dark-card); border-radius: 14px; padding: 1.2rem; border: 1px solid rgba(108,92,231,0.1);">
-                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem;">⚙️ Spesifikasi</h3>
-                    <div style="display: grid; gap: 0.4rem;">
-                        @foreach(explode('|', $product->specifications) as $spec)
-                        <div style="display: flex; font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(108,92,231,0.05);">
-                            @php $parts = explode(':', $spec); @endphp
-                            <span style="color: var(--text-secondary); min-width: 140px; font-weight: 600;">{{ trim($parts[0] ?? '') }}</span>
-                            <span style="color: var(--text-primary);">{{ trim($parts[1] ?? '') }}</span>
+                <div class="card card-2x" style="margin-bottom:2rem;">
+                    <div class="card-header" style="border-bottom-width:2px;">
+                        <h3 class="font-black uppercase" style="display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fas fa-microchip text-primary"></i> Technical Specifications
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display:flex; flex-direction:column;">
+                            @foreach(explode('|', $product->specifications) as $spec)
+                                @php $parts = explode(':', $spec); @endphp
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:0.75rem 0; {{ !$loop->last ? 'border-bottom:1px solid var(--border);' : '' }}">
+                                    <span class="font-mono text-muted uppercase" style="font-size:0.8rem; letter-spacing:0.05em;">{{ trim($parts[0] ?? '') }}</span>
+                                    <span class="font-mono font-bold" style="font-size:0.85rem; text-align:right; max-width:60%;">{{ trim($parts[1] ?? '') }}</span>
+                                </div>
+                            @endforeach
                         </div>
-                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                {{-- Quantity + Add to Cart --}}
+                @if($product->stock > 0)
+                <div class="card card-2x" style="margin-bottom:2rem;">
+                    <div class="card-body">
+                        <form method="POST" action="{{ route('cart.store') }}" id="add-to-cart-form">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+                                <div>
+                                    <p class="font-mono text-muted" style="font-size:0.85rem; margin-bottom:0.5rem;">Quantity</p>
+                                    <div style="display:flex; align-items:center; gap:1rem;">
+                                        <button type="button" onclick="changeQty(-1)"
+                                                class="qty-btn" style="width:44px; height:44px; border:2px solid var(--border); border-radius:var(--radius); background:none; color:var(--fg); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color 0.2s;">
+                                            <i class="fas fa-minus" style="font-size:0.7rem;"></i>
+                                        </button>
+                                        <span id="qty-display" class="font-black" style="font-size:1.75rem; width:3rem; text-align:center;">1</span>
+                                        <input type="hidden" name="quantity" id="qty" value="1">
+                                        <button type="button" onclick="changeQty(1)"
+                                                class="qty-btn" style="width:44px; height:44px; border:2px solid var(--border); border-radius:var(--radius); background:none; color:var(--fg); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color 0.2s;">
+                                            <i class="fas fa-plus" style="font-size:0.7rem;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <p class="font-mono text-muted" style="font-size:0.85rem; margin-bottom:0.5rem;">Subtotal</p>
+                                    <p class="font-black text-primary" id="subtotal" style="font-size:2rem;">{{ $product->formatted_price }}</p>
+                                </div>
+                            </div>
+
+                            {{-- Two buttons --}}
+                            <div style="display:flex; gap:1rem;">
+                                <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
+                                    <i class="fas fa-shopping-cart" style="margin-right:0.5rem;"></i> Add to Cart
+                                </button>
+                                <button type="submit" class="btn btn-outline btn-lg" style="flex:1;" formaction="{{ route('cart.store') }}">
+                                    <i class="fas fa-bolt" style="margin-right:0.5rem;"></i> Buy Now
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                @else
+                <div class="card card-2x" style="margin-bottom:2rem;">
+                    <div class="card-body" style="text-align:center; padding:2rem;">
+                        <i class="fas fa-box-open text-muted" style="font-size:2rem; margin-bottom:0.75rem;"></i>
+                        <p class="font-black uppercase" style="margin-bottom:0.5rem;">Out of Stock</p>
+                        <p class="font-mono text-muted" style="font-size:0.85rem;">This product is currently unavailable</p>
                     </div>
                 </div>
                 @endif
             </div>
         </div>
 
-        <!-- Related Products -->
+        {{-- Related Products --}}
         @if($relatedProducts->count() > 0)
-        <div style="margin-top: 3rem;">
-            <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1.2rem;">Produk Terkait</h2>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem;">
+        <div style="margin-top:4rem; border-top:2px solid var(--border); padding-top:4rem;">
+            <div class="reveal" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                <h2 class="font-black uppercase" style="font-size:clamp(1.5rem, 3vw, 2.5rem);">
+                    RELATED <span class="text-primary">PRODUCTS</span>
+                </h2>
+                <a href="{{ route('products.index', ['category' => $product->category->slug ?? '']) }}" class="font-mono" style="font-size:0.85rem; color:#FF0000; display:flex; align-items:center; gap:0.5rem;">
+                    View All <i class="fas fa-chevron-right" style="font-size:0.7rem;"></i>
+                </a>
+            </div>
+            <div class="stagger-reveal" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem;">
                 @foreach($relatedProducts as $related)
                     @include('components.product-card', ['product' => $related])
                 @endforeach
@@ -104,4 +200,35 @@
         @endif
     </div>
 </section>
+
+@push('styles')
+<style>
+    .product-detail-grid { display:grid; grid-template-columns:1fr; gap:3rem; }
+    @media(min-width:1024px) { .product-detail-grid { grid-template-columns:1fr 1fr; } }
+    .qty-btn:hover { border-color:#FF0000 !important; }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+const productPrice = {{ $product->price }};
+const maxStock = {{ $product->stock }};
+
+function changeQty(delta) {
+    const qtyInput = document.getElementById('qty');
+    const display = document.getElementById('qty-display');
+    let val = parseInt(qtyInput.value) + delta;
+    val = Math.max(1, Math.min(maxStock, val));
+    qtyInput.value = val;
+    display.textContent = val;
+    updateSubtotal();
+}
+
+function updateSubtotal() {
+    const qty = parseInt(document.getElementById('qty').value) || 1;
+    const formatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(productPrice * qty);
+    document.getElementById('subtotal').textContent = formatted;
+}
+</script>
+@endpush
 @endsection
