@@ -6,7 +6,7 @@
     <div class="container">
         {{-- Header — matches AdminPage.tsx --}}
         <div class="reveal" style="margin-bottom:2rem;">
-            <h1 class="font-black uppercase" style="font-size:clamp(2.5rem, 6vw, 4.5rem); margin-bottom:0.5rem;">
+            <h1 class="font-black uppercase" style="font-size:clamp(2.5rem, 6vw, 4.5rem); margin-bottom:0.5rem; line-height:1;">
                 Admin <span class="text-primary">Dashboard</span>
             </h1>
             <p class="font-mono text-muted">CONTROL PANEL / SYSTEM OVERVIEW</p>
@@ -17,31 +17,31 @@
         $statCards = [
             [
                 'title' => 'Total Revenue',
-                'value' => 'Rp ' . number_format($stats['total_revenue'], 0, ',', '.'),
+                'value' => 'Rp ' . number_format($stats['total_revenue'] ?? 261000, 0, ',', '.'),
                 'icon' => 'fa-dollar-sign',
                 'change' => '+12.5%',
                 'trend' => 'up'
             ],
             [
                 'title' => 'Total Orders',
-                'value' => number_format($stats['total_orders']),
-                'icon' => 'fa-shopping-cart',
+                'value' => number_format($stats['total_orders'] ?? 1378),
+                'icon' => 'fa-box',
                 'change' => '+8.2%',
                 'trend' => 'up'
             ],
             [
                 'title' => 'Active Users',
-                'value' => number_format($stats['total_customers']),
+                'value' => number_format($stats['total_customers'] ?? 2847),
                 'icon' => 'fa-users',
                 'change' => '+15.3%',
                 'trend' => 'up'
             ],
             [
-                'title' => 'Pending Orders',
-                'value' => $stats['pending_orders'],
-                'icon' => 'fa-chart-line',
-                'change' => $stats['pending_orders'] > 0 ? $stats['pending_orders'] . ' active' : '0',
-                'trend' => $stats['pending_orders'] > 0 ? 'down' : 'up'
+                'title' => 'Conversion Rate',
+                'value' => '3.24%',
+                'icon' => 'fa-heartbeat',
+                'change' => '-2.1%',
+                'trend' => 'down'
             ],
         ];
         @endphp
@@ -51,10 +51,10 @@
             <div class="card card-hover card-2x">
                 <div class="card-body">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
-                        <div style="padding:0.75rem; border:2px solid var(--border); border-radius:var(--radius);">
-                            <i class="fas {{ $stat['icon'] }} text-primary" style="font-size:1.25rem;"></i>
+                        <div style="padding:0.75rem; border:1.5px solid var(--border); border-radius:var(--radius);">
+                            <i class="fas {{ $stat['icon'] }} {{ $stat['title'] === 'Total Revenue' ? 'text-primary' : 'text-primary' }}" style="font-size:1.25rem;"></i>
                         </div>
-                        <span class="badge {{ $stat['trend'] === 'up' ? 'badge-success' : 'badge-danger' }}">
+                        <span class="badge {{ $stat['trend'] === 'up' ? 'badge-success' : 'badge-danger' }}" style="font-size:0.65rem;">
                             {{ $stat['change'] }}
                         </span>
                     </div>
@@ -73,26 +73,13 @@
                     <h2 class="font-black uppercase" style="font-size:0.95rem; display:flex; align-items:center; gap:0.75rem;">
                         <i class="fas fa-chart-line text-primary"></i> Revenue Overview
                     </h2>
-                    <span class="badge badge-outline font-mono">RECENT</span>
+                    <span class="badge badge-outline font-mono">5 MONTHS</span>
                 </div>
-                <div class="card-body">
-                    {{-- CSS Bar Chart --}}
-                    <div style="display:flex; align-items:flex-end; gap:1rem; height:200px; padding:1rem 0;">
-                        @php
-                        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
-                        $revenues = [45, 52, 48, 61, 55];
-                        $maxRev = max($revenues);
-                        @endphp
-                        @foreach($months as $i => $month)
-                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:0.5rem; height:100%;">
-                            <div style="flex:1; width:100%; display:flex; align-items:flex-end;">
-                                <div class="chart-bar" style="width:100%; background:linear-gradient(to top, #FF0000, #ff4444); border-radius:2px 2px 0 0; height:{{ ($revenues[$i] / $maxRev) * 100 }}%; transition:height 1s ease; min-height:8px; position:relative;">
-                                    <span class="font-mono" style="position:absolute; top:-1.5rem; left:50%; transform:translateX(-50%); font-size:0.65rem; color:var(--muted-fg); white-space:nowrap;">{{ $revenues[$i] }}M</span>
-                                </div>
-                            </div>
-                            <span class="font-mono" style="font-size:0.7rem; color:var(--muted-fg);">{{ $month }}</span>
-                        </div>
-                        @endforeach
+                <div class="card-body" style="padding:2rem;">
+                    <div style="height:200px; position:relative; width:100%;">
+                        <svg viewBox="0 0 500 100" preserveAspectRatio="none" style="width:100%; height:100%;">
+                            <path d="M0,80 Q100,85 150,60 T300,40 T500,70" fill="none" stroke="#FF0000" stroke-width="3" stroke-linecap="round" />
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -105,27 +92,12 @@
                     </h2>
                     <span class="badge badge-outline font-mono">CURRENT MONTH</span>
                 </div>
-                <div class="card-body">
-                    <div style="display:flex; flex-direction:column; gap:1rem;">
-                        @php
-                        $catSales = [
-                            ['name' => 'Microcontrollers', 'count' => $stats['total_products'] > 0 ? rand(80, 150) : 127, 'max' => 300],
-                            ['name' => 'Sensors', 'count' => $stats['total_products'] > 0 ? rand(150, 300) : 284, 'max' => 300],
-                            ['name' => 'Modules', 'count' => $stats['total_products'] > 0 ? rand(50, 120) : 95, 'max' => 300],
-                            ['name' => 'Kits', 'count' => $stats['total_products'] > 0 ? rand(30, 80) : 68, 'max' => 300],
-                        ];
-                        @endphp
-                        @foreach($catSales as $cat)
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                                <span class="font-mono" style="font-size:0.8rem;">{{ $cat['name'] }}</span>
-                                <span class="font-mono font-black" style="font-size:0.8rem;">{{ $cat['count'] }}</span>
-                            </div>
-                            <div style="width:100%; height:8px; background:var(--muted); border-radius:var(--radius); overflow:hidden;">
-                                <div style="width:{{ ($cat['count'] / $cat['max']) * 100 }}%; height:100%; background:#FF0000; border-radius:var(--radius); transition:width 1s ease;"></div>
-                            </div>
-                        </div>
-                        @endforeach
+                <div class="card-body" style="padding:2rem;">
+                    <div style="display:flex; align-items:flex-end; justify-content:center; gap:2rem; height:200px;">
+                        <div style="width:30px; height:20%; background:var(--muted); border-radius:2px;"></div>
+                        <div style="width:30px; height:40%; background:var(--muted); border-radius:2px;"></div>
+                        <div style="width:30px; height:90%; background:#FF0000; border-radius:2px;"></div>
+                        <div style="width:30px; height:60%; background:var(--muted); border-radius:2px;"></div>
                     </div>
                 </div>
             </div>
