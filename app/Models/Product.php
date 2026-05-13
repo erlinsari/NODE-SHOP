@@ -38,6 +38,27 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function getImageUrlAttribute(): ?string
+    {
+        if (! $this->image) {
+            return null;
+        }
+
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://') || str_starts_with($this->image, '/')) {
+            return $this->image;
+        }
+
+        if (str_starts_with($this->image, 'storage/')) {
+            return asset($this->image);
+        }
+
+        if (str_starts_with($this->image, 'images/') || str_starts_with($this->image, 'products/') || str_starts_with($this->image, 'uploads/')) {
+            return asset($this->image);
+        }
+
+        return asset('storage/' . $this->image);
+    }
+
     public function getAverageRatingAttribute(): float
     {
         return $this->reviews()->avg('rating') ?? 0;

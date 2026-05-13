@@ -16,8 +16,8 @@
             <div class="reveal" style="position:sticky; top:6rem; height:fit-content;">
                 <div class="card card-2x" style="overflow:hidden;">
                     <div style="position:relative; aspect-ratio:1; background:var(--muted); cursor:zoom-in; overflow:hidden;">
-                        @if($product->image)
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" 
+                        @if($product->image_url)
+                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
                                  style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s;" 
                                  onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
                                  id="product-main-image">
