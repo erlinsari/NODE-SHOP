@@ -140,8 +140,8 @@
                     </a>
                 </div>
                 <div style="min-height:24rem; background:linear-gradient(135deg, var(--muted), color-mix(in srgb, var(--muted) 50%, transparent)); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
-                    @if($featured->image)
-                        <img src="{{ asset('storage/' . $featured->image) }}" alt="{{ $featured->name }}" style="width:100%; height:100%; object-fit:cover;">
+                    @if($featured->image_url)
+                        <img src="{{ $featured->image_url }}" alt="{{ $featured->name }}" style="width:100%; height:100%; object-fit:cover;">
                     @else
                         <div style="display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
                             <div style="padding:2rem; border:2px solid var(--border); border-radius:var(--radius);">

@@ -23,7 +23,7 @@
                 </h1>
                 <p class="font-mono text-muted" style="font-size:0.85rem;">Placed on {{ $order->created_at->format('d F Y, H:i') }}</p>
             </div>
-            <span class="badge {{ $statusColors[$order->status] ?? 'badge-secondary' }}" style="font-size:0.85rem; padding:0.5rem 1.25rem;">
+            <span id="order-status-badge" class="badge {{ $statusColors[$order->status] ?? 'badge-secondary' }}" style="font-size:0.85rem; padding:0.5rem 1.25rem;">
                 <i class="fas {{ $statusIcons[$order->status] ?? 'fa-clock' }}" style="margin-right:0.4rem;"></i>
                 {{ strtoupper($order->status) }}
             </span>
@@ -172,6 +172,49 @@
         @endif
     </div>
 </section>
+
+@push('scripts')
+<script>
+(() => {
+    const orderUrl = @json(route('orders.show', $order));
+    let lastSignature = @json([
+        'status' => $order->status,
+        'payment_status' => $order->payment_status ?? 'unpaid',
+        'paid_at' => optional($order->paid_at)->toDateTimeString(),
+        'updated_at' => optional($order->updated_at)->toDateTimeString(),
+    ]);
+
+    const refreshOrderState = async () => {
+        try {
+            const response = await fetch(orderUrl, {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const payload = await response.json();
+            const signature = JSON.stringify(payload);
+
+            if (signature !== JSON.stringify(lastSignature)) {
+                window.location.reload();
+                return;
+            }
+        } catch (error) {
+            console.error('Order live sync failed:', error);
+        }
+    };
+
+    refreshOrderState();
+    window.setInterval(refreshOrderState, 10000);
+})();
+</script>
+@endpush
 
 @push('styles')
 <style>

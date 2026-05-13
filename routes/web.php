@@ -31,7 +31,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [OrderController::class, 'create'])->name('orders.create');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+     Route::resource('orders', App\Http\Controllers\OrderController::class);
+
+    Route::get('/orders/{order}/payment', [App\Http\Controllers\OrderController::class, 'payment'])
+        ->name('orders.payment');
+
+    Route::post('/orders/{order}/payment/sync', [OrderController::class, 'syncMidtransPayment'])
+        ->name('orders.payment.sync');
 });
+
+Route::post('/midtrans/notification', [OrderController::class, 'midtransNotification'])
+    ->name('midtrans.notification');
 
 // Admin Routes
 Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
@@ -39,6 +49,7 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     ->name('admin.')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/live', [AdminDashboardController::class, 'liveData'])->name('dashboard.live');
     });
 
 require __DIR__.'/auth.php';

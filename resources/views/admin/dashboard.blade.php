@@ -10,6 +10,7 @@
                 Admin <span class="text-primary">Dashboard</span>
             </h1>
             <p class="font-mono text-muted">CONTROL PANEL / SYSTEM OVERVIEW</p>
+            <p id="admin-dashboard-last-updated" class="font-mono text-muted" style="font-size:0.75rem; margin-top:0.35rem;">LIVE SYNC: INITIALIZING...</p>
         </div>
 
         {{-- Stats Cards — 4 cols matching AdminPage.tsx exactly --}}
@@ -37,11 +38,11 @@
                 'trend' => 'up'
             ],
             [
-                'title' => 'Conversion Rate',
-                'value' => '3.24%',
-                'icon' => 'fa-heartbeat',
-                'change' => '-2.1%',
-                'trend' => 'down'
+                'title' => 'Pending Orders',
+                'value' => number_format($stats['pending_orders'] ?? 0),
+                'icon' => 'fa-clock',
+                'change' => 'LIVE',
+                'trend' => 'up'
             ],
         ];
         @endphp
@@ -59,7 +60,7 @@
                         </span>
                     </div>
                     <p class="font-mono text-muted uppercase" style="font-size:0.75rem; letter-spacing:0.05em; margin-bottom:0.5rem;">{{ $stat['title'] }}</p>
-                    <p class="font-black" style="font-size:1.875rem;">{{ $stat['value'] }}</p>
+                    <p id="admin-stat-{{ Str::slug($stat['title']) }}" class="font-black" style="font-size:1.875rem;">{{ $stat['value'] }}</p>
                 </div>
             </div>
             @endforeach
@@ -113,32 +114,38 @@
                     </h2>
                     <span class="badge badge-outline font-mono">LATEST</span>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="recent-orders-list">
                     @forelse($recentOrders as $order)
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; {{ !$loop->last ? 'border-bottom:1px solid var(--border);' : '' }} flex-wrap:wrap; gap:0.5rem;">
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <div style="padding:0.5rem; border:2px solid var(--border); border-radius:var(--radius);">
-                                @if($order->status === 'completed' || $order->status === 'delivered')
+                                @if($order['status'] === 'completed' || $order['status'] === 'delivered')
                                     <i class="fas fa-check-circle text-primary" style="font-size:1rem;"></i>
-                                @elseif($order->status === 'cancelled')
+                                @elseif($order['status'] === 'cancelled')
                                     <i class="fas fa-times-circle text-danger" style="font-size:1rem;"></i>
                                 @else
                                     <i class="fas fa-clock text-primary" style="font-size:1rem;"></i>
                                 @endif
                             </div>
                             <div>
-                                <p class="font-mono font-bold" style="font-size:0.85rem;">{{ $order->order_number }}</p>
-                                <p class="font-mono text-muted" style="font-size:0.7rem;">{{ $order->user->name ?? 'N/A' }} • {{ $order->created_at->diffForHumans() }}</p>
+                                <p class="font-mono font-bold" style="font-size:0.85rem;">{{ $order['order_number'] }}</p>
+                                <p class="font-mono text-muted" style="font-size:0.7rem;">{{ $order['user_name'] }} • {{ $order['created_at_human'] }}</p>
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <span class="font-mono font-black" style="font-size:0.85rem;">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
+                            <span class="font-mono font-black" style="font-size:0.85rem;">Rp {{ number_format($order['total'], 0, ',', '.') }}</span>
                             @php
                                 $statusColors = ['pending'=>'badge-warning','processing'=>'badge-primary','shipped'=>'badge-primary','completed'=>'badge-success','delivered'=>'badge-success','cancelled'=>'badge-danger'];
+                                $paymentColors = ['unpaid'=>'badge-warning','paid'=>'badge-success'];
                             @endphp
-                            <span class="badge {{ $statusColors[$order->status] ?? 'badge-secondary' }}">
-                                {{ strtoupper($order->status) }}
-                            </span>
+                            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+                                <span class="badge {{ $statusColors[$order['status']] ?? 'badge-secondary' }}">
+                                    {{ strtoupper($order['status']) }}
+                                </span>
+                                <span class="badge {{ $paymentColors[$order['payment_status']] ?? 'badge-secondary' }}">
+                                    {{ strtoupper($order['payment_status'] ?? 'unpaid') }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     @empty
@@ -158,23 +165,23 @@
                     </h2>
                     <span class="badge badge-outline font-mono">BY VIEWS</span>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="top-products-list">
                     @forelse($topProducts as $product)
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; {{ !$loop->last ? 'border-bottom:1px solid var(--border);' : '' }}">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <div style="width:40px; height:40px; background:var(--muted); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0;">
-                                {{ $product->category->icon ?? '📦' }}
+                                {{ $product['category_icon'] }}
                             </div>
                             <div>
-                                <p class="font-bold" style="font-size:0.85rem;">{{ Str::limit($product->name, 30) }}</p>
+                                <p class="font-bold" style="font-size:0.85rem;">{{ Str::limit($product['name'], 30) }}</p>
                                 <p class="font-mono text-muted" style="font-size:0.7rem;">
-                                    {{ $product->category->name ?? 'N/A' }} • Stock: {{ $product->stock }}
+                                    {{ $product['category_name'] }} • Stock: {{ $product['stock'] }}
                                 </p>
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <i class="fas fa-eye text-muted" style="font-size:0.7rem;"></i>
-                            <span class="font-mono text-muted" style="font-size:0.8rem;">{{ $product->views_count }}</span>
+                            <span class="font-mono text-muted" style="font-size:0.8rem;">{{ $product['views_count'] }}</span>
                         </div>
                     </div>
                     @empty
@@ -219,6 +226,160 @@
         </div>
     </div>
 </section>
+
+@push('scripts')
+<script>
+(() => {
+    const dataUrl = @json(route('admin.dashboard.live'));
+    const lastUpdatedElement = document.getElementById('admin-dashboard-last-updated');
+    const statElements = {
+        totalRevenue: document.getElementById('admin-stat-total-revenue'),
+        totalOrders: document.getElementById('admin-stat-total-orders'),
+        totalCustomers: document.getElementById('admin-stat-active-users'),
+        pendingOrders: document.getElementById('admin-stat-pending-orders'),
+    };
+    const recentOrdersList = document.getElementById('recent-orders-list');
+    const topProductsList = document.getElementById('top-products-list');
+    let lastSignature = null;
+
+    const escapeHtml = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    const formatCurrency = (value) => `Rp ${Number(value ?? 0).toLocaleString('id-ID')}`;
+
+    const renderRecentOrders = (orders) => {
+        if (!orders.length) {
+            recentOrdersList.innerHTML = `
+                <div style="text-align:center; padding:2rem;">
+                    <i class="fas fa-inbox text-muted" style="font-size:2rem; margin-bottom:0.75rem; display:block;"></i>
+                    <p class="font-mono text-muted" style="font-size:0.85rem;">No orders yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        recentOrdersList.innerHTML = orders.map((order, index) => {
+            const statusColors = {
+                pending: 'badge-warning',
+                processing: 'badge-primary',
+                shipped: 'badge-primary',
+                completed: 'badge-success',
+                delivered: 'badge-success',
+                cancelled: 'badge-danger',
+            };
+            const paymentColors = {
+                unpaid: 'badge-warning',
+                paid: 'badge-success',
+            };
+            const statusClass = statusColors[order.status] ?? 'badge-secondary';
+            const paymentClass = paymentColors[order.payment_status] ?? 'badge-secondary';
+            const statusIcon = (order.status === 'completed' || order.status === 'delivered')
+                ? 'fa-check-circle'
+                : (order.status === 'cancelled' ? 'fa-times-circle' : 'fa-clock');
+
+            return `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; ${index < orders.length - 1 ? 'border-bottom:1px solid var(--border);' : ''} flex-wrap:wrap; gap:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <div style="padding:0.5rem; border:2px solid var(--border); border-radius:var(--radius);">
+                            <i class="fas ${statusIcon} text-primary" style="font-size:1rem;"></i>
+                        </div>
+                        <div>
+                            <p class="font-mono font-bold" style="font-size:0.85rem;">${escapeHtml(order.order_number)}</p>
+                            <p class="font-mono text-muted" style="font-size:0.7rem;">${escapeHtml(order.user_name)} • ${escapeHtml(order.created_at_human)}</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <span class="font-mono font-black" style="font-size:0.85rem;">${formatCurrency(order.total)}</span>
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+                            <span class="badge ${statusClass}">${escapeHtml(String(order.status).toUpperCase())}</span>
+                            <span class="badge ${paymentClass}">${escapeHtml(String(order.payment_status).toUpperCase())}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const renderTopProducts = (products) => {
+        if (!products.length) {
+            topProductsList.innerHTML = `
+                <div style="text-align:center; padding:2rem;">
+                    <p class="font-mono text-muted" style="font-size:0.85rem;">No products yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        topProductsList.innerHTML = products.map((product, index) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; ${index < products.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="width:40px; height:40px; background:var(--muted); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0;">
+                        ${escapeHtml(product.category_icon)}
+                    </div>
+                    <div>
+                        <p class="font-bold" style="font-size:0.85rem;">${escapeHtml(product.name)}</p>
+                        <p class="font-mono text-muted" style="font-size:0.7rem;">
+                            ${escapeHtml(product.category_name)} • Stock: ${escapeHtml(product.stock)}
+                        </p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <i class="fas fa-eye text-muted" style="font-size:0.7rem;"></i>
+                    <span class="font-mono text-muted" style="font-size:0.8rem;">${escapeHtml(product.views_count)}</span>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    const applyPayload = (payload) => {
+        statElements.totalRevenue.textContent = formatCurrency(payload.stats.total_revenue);
+        statElements.totalOrders.textContent = Number(payload.stats.total_orders ?? 0).toLocaleString('id-ID');
+        statElements.totalCustomers.textContent = Number(payload.stats.total_customers ?? 0).toLocaleString('id-ID');
+        statElements.pendingOrders.textContent = Number(payload.stats.pending_orders ?? 0).toLocaleString('id-ID');
+        renderRecentOrders(payload.recentOrders ?? []);
+        renderTopProducts(payload.topProducts ?? []);
+        if (lastUpdatedElement) {
+            lastUpdatedElement.textContent = `LIVE SYNC: ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+        }
+    };
+
+    const refreshDashboard = async () => {
+        try {
+            const response = await fetch(dataUrl, {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const payload = await response.json();
+            const signature = JSON.stringify(payload);
+
+            if (signature === lastSignature) {
+                return;
+            }
+
+            lastSignature = signature;
+            applyPayload(payload);
+        } catch (error) {
+            console.error('Admin dashboard live sync failed:', error);
+        }
+    };
+
+    refreshDashboard();
+    window.setInterval(refreshDashboard, 10000);
+})();
+</script>
+@endpush
 
 @push('styles')
 <style>

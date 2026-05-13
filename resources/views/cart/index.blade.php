@@ -26,7 +26,7 @@
 
         @if($cartItems->count() > 0)
         @php
-            $shipping = $total > 500000 ? 0 : 25000;
+            $shipping = 0;
             $tax = $total * 0.11;
             $grandTotal = $total + $shipping + $tax;
         @endphp
@@ -41,8 +41,8 @@
                         {{-- Product Image --}}
                         <div style="width:7rem; height:7rem; border-radius:var(--radius); overflow:hidden; background:var(--muted); flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer;"
                              onclick="window.location='{{ route('products.show', $item->product->slug) }}'">
-                            @if($item->product->image)
-                                <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            @if($item->product->image_url)
+                                <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                             @else
                                 <span style="font-size:2.5rem;">{{ $item->product->category->icon ?? '📦' }}</span>
                             @endif
