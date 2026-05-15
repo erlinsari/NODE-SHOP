@@ -4,6 +4,10 @@
 @section('content')
 <section style="min-height:100vh; padding:2rem 0;">
     <div class="container" style="max-width:900px;">
+        @php
+            $canPayNow = ($orderPayload['can_pay_now'] ?? false) && !empty($order->snap_token);
+        @endphp
+
         {{-- Back Button --}}
         <a href="{{ route('orders.index') }}" class="reveal" style="display:inline-flex; align-items:center; gap:0.5rem; margin-bottom:2rem; font-family:'JetBrains Mono'; text-transform:uppercase; font-size:0.85rem; transition:color 0.2s;"
            onmouseover="this.style.color='#FF0000'" onmouseout="this.style.color='var(--fg)'">
@@ -23,11 +27,25 @@
                 </h1>
                 <p class="font-mono text-muted" style="font-size:0.85rem;">Placed on {{ $order->created_at->format('d F Y, H:i') }}</p>
             </div>
-            <span class="badge {{ $statusColors[$order->status] ?? 'badge-secondary' }}" style="font-size:0.85rem; padding:0.5rem 1.25rem;">
+            <span id="order-status-badge" class="badge {{ $statusColors[$order->status] ?? 'badge-secondary' }}" style="font-size:0.85rem; padding:0.5rem 1.25rem;">
                 <i class="fas {{ $statusIcons[$order->status] ?? 'fa-clock' }}" style="margin-right:0.4rem;"></i>
                 {{ strtoupper($order->status) }}
             </span>
         </div>
+
+        @if($canPayNow)
+        <div class="card card-2x reveal" style="margin-bottom:1.5rem; border-color:#FF0000;">
+            <div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+                <div>
+                    <p class="font-black uppercase" style="font-size:0.95rem; margin-bottom:0.25rem;">Payment Pending</p>
+                    <p class="font-mono text-muted" style="font-size:0.8rem;">Selesaikan pembayaran untuk mulai memproses pesanan ini.</p>
+                </div>
+                <a href="{{ route('orders.payment', $order) }}" class="btn btn-primary">
+                    <i class="fas fa-credit-card"></i> Bayar Sekarang
+                </a>
+            </div>
+        </div>
+        @endif
 
         {{-- Order Timeline --}}
         <div class="card card-2x reveal" style="margin-bottom:1.5rem;">
@@ -57,7 +75,7 @@
         </div>
 
         {{-- Info Cards --}}
-        <div class="stagger-reveal" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;" class="order-show-grid">
+        <div class="stagger-reveal order-show-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
             {{-- Shipping Info --}}
             <div class="card card-2x">
                 <div class="card-header" style="border-bottom-width:2px;">
@@ -172,6 +190,53 @@
         @endif
     </div>
 </section>
+
+@push('scripts')
+<script>
+(() => {
+    const orderUrl = @js(route('orders.show', $order));
+    let lastState = @js($orderPayload);
+
+    if (!lastState.can_pay_now) {
+        return;
+    }
+
+    const refreshOrderState = async () => {
+        try {
+            const response = await fetch(orderUrl, {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const payload = await response.json();
+
+            const hasChanged = payload.status !== lastState.status
+                || payload.payment_status !== lastState.payment_status
+                || payload.paid_at !== lastState.paid_at
+                || payload.updated_at !== lastState.updated_at;
+
+            if (hasChanged) {
+                window.location.reload();
+                return;
+            }
+
+            lastState = payload;
+        } catch (error) {
+            console.error('Order live sync failed:', error);
+        }
+    };
+
+    window.setInterval(refreshOrderState, 10000);
+})();
+</script>
+@endpush
 
 @push('styles')
 <style>

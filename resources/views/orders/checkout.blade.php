@@ -118,8 +118,8 @@
                             @foreach($cartItems as $item)
                             <div style="display:flex; gap:0.75rem; align-items:center;">
                                 <div style="width:48px; height:48px; background:var(--muted); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
-                                    @if($item->product->image)
-                                        <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" style="width:100%; height:100%; object-fit:cover;">
+                                    @if($item->product->image_url)
+                                        <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" style="width:100%; height:100%; object-fit:cover;">
                                     @else
                                         <span style="font-size:1.5rem;">{{ $item->product->category->icon ?? '📦' }}</span>
                                     @endif
@@ -136,7 +136,7 @@
 
                             {{-- Totals --}}
                             @php
-                                $shipping = 15000;
+                                $shipping = 0;
                                 $tax = $subtotal * 0.11;
                                 $grandTotal = $subtotal + $shipping + $tax;
                             @endphp

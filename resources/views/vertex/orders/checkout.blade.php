@@ -167,12 +167,12 @@
                     </div>
                     <div class="summary-item">
                         <span style="color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Shipping</span>
-                        <span style="color: var(--text-secondary);">Rp 15.000</span>
+                        <span style="color: var(--text-secondary);">Gratis</span>
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; font-size: 1.5rem; font-weight: 900;">
                         <span>TOTAL</span>
-                        <span>Rp {{ number_format($subtotal + 15000, 0, ',', '.') }}</span>
+                        <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                     </div>
 
                     <button type="submit" class="btn-checkout">INITIATE PURCHASE</button>

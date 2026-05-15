@@ -3,8 +3,8 @@
      onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
 
     <div onclick="window.location='{{ route('products.show', $product->slug) }}'" style="position:relative; height:14rem; overflow:hidden; background:var(--muted);">
-        @if($product->image)
-            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+        @if($product->image_url)
+            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
                  style="width:100%; height:100%; object-fit:cover; transition: transform 0.6s ease;"
                  class="card-img">
         @else

@@ -39,6 +39,11 @@
                     'cancelled' => 'fa-times-circle',
                 ];
             @endphp
+            @php
+                $canPayNow = in_array($order->payment_status, ['unpaid', 'pending'], true)
+                    && !in_array($order->status, ['cancelled', 'delivered'], true)
+                    && !empty($order->snap_token);
+            @endphp
             <div class="card card-hover card-2x order-card">
                 {{-- Order Header — Clickable --}}
                 <div class="card-header order-header" style="cursor:pointer; transition:background 0.2s;"
@@ -61,6 +66,9 @@
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <div style="text-align:right;">
                                 <span class="font-black" style="font-size:1.1rem;">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
+                                <p class="font-mono text-muted" style="font-size:0.68rem; margin-top:0.25rem; text-transform:uppercase;">
+                                    Payment: {{ strtoupper($order->payment_status ?? 'unpaid') }}
+                                </p>
                             </div>
                             <span class="badge {{ $statusColors[$order->status] ?? 'badge-secondary' }}">
                                 {{ strtoupper($order->status) }}
@@ -127,10 +135,17 @@
                         </div>
 
                         {{-- Action Link --}}
-                        <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                            <a href="{{ route('orders.show', $order) }}" class="font-mono" style="font-size:0.8rem; color:#FF0000; display:flex; align-items:center; gap:0.5rem;">
-                                View Full Details <i class="fas fa-chevron-right" style="font-size:0.65rem;"></i>
-                            </a>
+                        <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+                            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                                <a href="{{ route('orders.show', $order) }}" class="font-mono" style="font-size:0.8rem; color:#FF0000; display:flex; align-items:center; gap:0.5rem;">
+                                    View Full Details <i class="fas fa-chevron-right" style="font-size:0.65rem;"></i>
+                                </a>
+                                @if($canPayNow)
+                                    <a href="{{ route('orders.payment', $order) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-credit-card"></i> Bayar Sekarang
+                                    </a>
+                                @endif
+                            </div>
                             <span class="font-mono text-muted" style="font-size:0.7rem;">{{ $order->created_at->diffForHumans() }}</span>
                         </div>
                     </div>
