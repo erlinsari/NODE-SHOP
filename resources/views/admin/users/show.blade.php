@@ -1,0 +1,8 @@
+@extends('admin.layouts.admin')
+
+@section('content')
+<div class="p-8"><div class="mb-4"><a href="{{ route('admin.users.index') }}" class="text-red-600">← Back to Users</a></div>
+<div class="bg-white rounded-xl shadow-sm p-6"><div class="flex items-center gap-4"><div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center"><i class="fas fa-user text-red-600 text-3xl"></i></div><div><h1 class="text-2xl font-bold">{{ $user->name }}</h1><p class="text-gray-500">{{ $user->email }}</p></div></div>
+<div class="mt-6 grid grid-cols-2 gap-4"><div><p class="text-gray-500">Phone</p><p>{{ $user->phone ?? '-' }}</p></div><div><p class="text-gray-500">Member Since</p><p>{{ $user->created_at->format('d M Y') }}</p></div><div class="col-span-2"><p class="text-gray-500">Address</p><p>{{ $user->address ?? '-' }}</p></div></div>
+<h2 class="text-lg font-semibold mt-6 mb-4">Order History</h2>@forelse($user->orders as $order)<div class="border rounded p-4 mb-3"><div class="flex justify-between"><div><p class="font-bold">Order #{{ $order->id }}</p><p class="text-sm text-gray-500">{{ $order->created_at->format('d M Y') }}</p></div><div class="text-right"><p class="font-bold text-red-600">Rp {{ number_format($order->total,0,',','.') }}</p><span class="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">{{ $order->shipping_status }}</span></div></div></div>@empty<p class="text-gray-500">No orders yet</p>@endforelse</div></div>
+@endsection
