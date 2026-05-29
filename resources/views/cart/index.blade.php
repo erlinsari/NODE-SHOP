@@ -27,8 +27,7 @@
         @if($cartItems->count() > 0)
         @php
             $shipping = 0;
-            $tax = $total * 0.11;
-            $grandTotal = $total + $shipping + $tax;
+            $grandTotal = $total + $shipping;
         @endphp
 
         {{-- Cart Grid — lg:grid-cols-3 col-span-2 matching reference --}}
@@ -126,11 +125,6 @@
                                 @endif
                             </span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0;">
-                            <span class="text-muted">Tax (11%)</span>
-                            <span class="font-black">Rp {{ number_format($tax, 0, ',', '.') }}</span>
-                        </div>
-
                         @if($total < 500000)
                         <div style="background:color-mix(in srgb, var(--muted) 50%, transparent); padding:0.75rem; border:1px solid var(--border); border-radius:var(--radius);">
                             <p class="font-mono" style="font-size:0.75rem;">

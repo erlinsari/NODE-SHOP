@@ -21,7 +21,7 @@
             <div>
                 <p class="font-mono text-muted" style="font-size:0.8rem; text-transform:uppercase; margin-bottom:0.4rem;">Payment Gateway</p>
                 <h1 class="font-black uppercase" style="font-size:clamp(2rem, 4vw, 3rem); line-height:1;">
-                    Midtrans <span class="text-primary">Checkout</span>
+                    <span class="text-primary">Checkout</span>
                 </h1>
                 <p class="font-mono text-muted" style="font-size:0.82rem; margin-top:0.6rem;">Order {{ $order->order_number }}</p>
             </div>
@@ -50,7 +50,7 @@
                         </div>
                         <div class="payment-meta-box">
                             <p class="label">Payment Method</p>
-                            <p class="value">{{ strtoupper($order->payment_method ?? 'MIDTRANS') }}</p>
+                            <p class="value">{{ strtoupper($order->payment_method ?? 'ONLINE PAYMENT') }}</p>
                         </div>
                         <div class="payment-meta-box">
                             <p class="label">Total Payment</p>
@@ -74,10 +74,10 @@
                         </a>
                     @else
                         <p class="font-mono text-muted" style="font-size:0.8rem; margin:0;">
-                            Klik tombol di bawah untuk membuka modal pembayaran Midtrans.
+                            Klik tombol di bawah untuk membuka pembayaran.
                         </p>
                         <button id="pay-button" type="button" class="btn btn-primary btn-lg" style="width:fit-content;">
-                            <i class="fas fa-lock"></i> Bayar Sekarang via Midtrans
+                            <i class="fas fa-lock"></i> Bayar
                         </button>
                     @endif
                 </div>
@@ -156,7 +156,7 @@
         script.setAttribute('data-client-key', clientKey);
         script.setAttribute('data-midtrans-snap', 'true');
         script.onload = () => resolve(window.snap);
-        script.onerror = () => reject(new Error('Midtrans Snap SDK gagal dimuat.'));
+        script.onerror = () => reject(new Error('Layanan pembayaran gagal dimuat.'));
         document.head.appendChild(script);
     });
 
@@ -185,7 +185,7 @@
             await loadSnapSdk();
 
             if (!window.snap || typeof window.snap.pay !== 'function') {
-                throw new Error('Midtrans Snap tidak tersedia di browser.');
+                throw new Error('Layanan pembayaran tidak tersedia di browser.');
             }
 
             window.snap.pay(snapToken, {
@@ -211,7 +211,7 @@
             });
         } catch (error) {
             console.error(error);
-            alert(error.message || 'Midtrans gagal dibuka.');
+            alert(error.message || 'Pembayaran gagal dibuka.');
             payButton.disabled = false;
         }
     };

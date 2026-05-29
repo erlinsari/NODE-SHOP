@@ -136,9 +136,8 @@
 
                             {{-- Totals --}}
                             @php
-                                $shipping = 0;
-                                $tax = $subtotal * 0.11;
-                                $grandTotal = $subtotal + $shipping + $tax;
+                                $shipping = $shippingCost ?? 0;
+                                $grandTotal = $total ?? ($subtotal + $shipping);
                             @endphp
                             <div class="font-mono" style="font-size:0.85rem;">
                                 <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
@@ -148,10 +147,6 @@
                                 <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
                                     <span class="text-muted">Shipping</span>
                                     <span class="font-black">Rp {{ number_format($shipping, 0, ',', '.') }}</span>
-                                </div>
-                                <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
-                                    <span class="text-muted">Tax (11%)</span>
-                                    <span class="font-black">Rp {{ number_format($tax, 0, ',', '.') }}</span>
                                 </div>
                             </div>
 
